@@ -20,7 +20,7 @@ from typing import Union
 import numpy as np
 import numpy.typing as npt
 
-class AudioFile:
+class AudioBuffer:
     """
     Holds a mono float32 audio buffer and can write it out as a 16-bit WAV file.
 
@@ -36,7 +36,6 @@ class AudioFile:
 
     def __init__(
         self,
-        filename: Union[str, Path],
         length: Union[float, int],
         sample_rate: int = 44100,
     ):
@@ -45,7 +44,6 @@ class AudioFile:
         if length <= 0:
             raise ValueError("length must be positive")
 
-        self.filename = Path(filename)
         self.sample_rate = sample_rate
 
         num_samples = int(round(length * sample_rate)) + 1
@@ -71,7 +69,7 @@ class AudioFile:
 
     # ---------- I/O ----------
 
-    def write(self) -> None:
+    def write(self, filename: Union[str, Path]) -> None:
         """
         Write the buffer to disk as a 16-bit PCM mono WAV file.
 
@@ -80,7 +78,9 @@ class AudioFile:
         clipped = np.clip(self._samples, -1.0, 1.0)
         int_samples = (clipped * 32767.0).astype(np.int16)
 
-        with wave.open(str(self.filename), "wb") as wf:
+        fn = str(Path(filename).with_suffix(".wav"))
+
+        with wave.open(fn, "wb") as wf:
             wf.setnchannels(1)           # mono
             wf.setsampwidth(2)           # 16-bit
             wf.setframerate(self.sample_rate)
@@ -88,7 +88,6 @@ class AudioFile:
 
     def __repr__(self) -> str:
         return (
-            f"AudioFile(filename={self.filename!r}, "
             f"num_samples={self.num_samples}, "
             f"sample_rate={self.sample_rate})"
         )
