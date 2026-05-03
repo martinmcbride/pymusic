@@ -1,7 +1,7 @@
 import unittest
 from dataclasses import is_dataclass
 
-from pymusic.events import Event  # assumes the Event class is in event.py
+from pymusic.events import Event, Events
 
 
 class TestEvent(unittest.TestCase):
@@ -139,6 +139,178 @@ class TestEvent(unittest.TestCase):
         e = Event(0, 1, 60, 0.5, *extras)
         self.assertEqual(e.extras, extras)
         self.assertEqual(len(e.extras), 100)
+
+
+
+class TestEvents(unittest.TestCase):
+    # ---------- Construction ----------
+
+    def test_default_construction_empty(self):
+        es = Events()
+        self.assertEqual(len(es), 0)
+
+    def test_construction_from_list(self):
+        data = [Event(0, 1, 60, 0.8), Event(1, 1, 62, 0.7)]
+        es = Events(data)
+        self.assertEqual(len(es), 2)
+        self.assertEqual(es[0], data[0])
+        self.assertEqual(es[1], data[1])
+
+    def test_construction_copies_list(self):
+        # Mutating the original list should not affect the Events container
+        data = [Event(0, 1, 60, 0.8)]
+        es = Events(data)
+        data.append(Event(1, 1, 62, 0.7))
+        self.assertEqual(len(es), 1)
+
+    # ---------- add ----------
+
+    def test_add_single_event(self):
+        es = Events()
+        e = Event(0, 1, 60, 0.8)
+        es.add(e)
+        self.assertEqual(len(es), 1)
+        self.assertIs(es[0], e)
+
+    def test_add_multiple_events(self):
+        es = Events()
+        for i in range(5):
+            es.add(Event(i, 1, 60 + i, 0.5))
+        self.assertEqual(len(es), 5)
+        self.assertEqual(es[2].pitch, 62)
+
+    def test_add_non_event_raises(self):
+        es = Events()
+        with self.assertRaises(TypeError):
+            es.add("not an event")
+        with self.assertRaises(TypeError):
+            es.add((0, 1, 60, 0.8))
+        with self.assertRaises(TypeError):
+            es.add(None)
+
+    def test_add_preserves_order(self):
+        es = Events()
+        a = Event(0, 1, 60, 0.8)
+        b = Event(1, 1, 62, 0.7)
+        c = Event(2, 1, 64, 0.9)
+        es.add(a)
+        es.add(b)
+        es.add(c)
+        self.assertEqual(list(es), [a, b, c])
+
+    # ---------- Indexing ----------
+
+    def test_integer_indexing(self):
+        a = Event(0, 1, 60, 0.8)
+        b = Event(1, 1, 62, 0.7)
+        es = Events([a, b])
+        self.assertEqual(es[0], a)
+        self.assertEqual(es[1], b)
+
+    def test_negative_indexing(self):
+        a = Event(0, 1, 60, 0.8)
+        b = Event(1, 1, 62, 0.7)
+        es = Events([a, b])
+        self.assertEqual(es[-1], b)
+        self.assertEqual(es[-2], a)
+
+    def test_slice_indexing(self):
+        items = [Event(i, 1, 60 + i, 0.5) for i in range(5)]
+        es = Events(items)
+        self.assertEqual(es[1:4], items[1:4])
+        self.assertEqual(es[::2], items[::2])
+        self.assertEqual(es[::-1], items[::-1])
+
+    def test_out_of_range_indexing_raises(self):
+        es = Events([Event(0, 1, 60, 0.8)])
+        with self.assertRaises(IndexError):
+            _ = es[5]
+        with self.assertRaises(IndexError):
+            _ = es[-2]
+
+    # ---------- Iteration ----------
+
+    def test_iteration_yields_all_events(self):
+        items = [Event(i, 1, 60 + i, 0.5) for i in range(3)]
+        es = Events(items)
+        self.assertEqual(list(es), items)
+
+    def test_iteration_multiple_times(self):
+        # An iterable (vs. iterator) should be re-iterable
+        items = [Event(i, 1, 60 + i, 0.5) for i in range(3)]
+        es = Events(items)
+        first_pass = list(es)
+        second_pass = list(es)
+        self.assertEqual(first_pass, second_pass)
+        self.assertEqual(first_pass, items)
+
+    def test_iteration_empty(self):
+        es = Events()
+        self.assertEqual(list(es), [])
+
+    def test_for_loop(self):
+        items = [Event(i, 1, 60 + i, 0.5) for i in range(3)]
+        es = Events(items)
+        collected = []
+        for e in es:
+            collected.append(e)
+        self.assertEqual(collected, items)
+
+    def test_comprehension(self):
+        items = [Event(i, 1, 60 + i, 0.5) for i in range(4)]
+        es = Events(items)
+        pitches = [e.pitch for e in es]
+        self.assertEqual(pitches, [60, 61, 62, 63])
+
+    # ---------- Length & truthiness ----------
+
+    def test_len_changes_with_add(self):
+        es = Events()
+        self.assertEqual(len(es), 0)
+        es.add(Event(0, 1, 60, 0.8))
+        self.assertEqual(len(es), 1)
+        es.add(Event(1, 1, 62, 0.7))
+        self.assertEqual(len(es), 2)
+
+    def test_truthiness(self):
+        self.assertFalse(bool(Events()))
+        self.assertTrue(bool(Events([Event(0, 1, 60, 0.8)])))
+
+    # ---------- Equality & repr ----------
+
+    def test_equality_same_contents(self):
+        a = Events([Event(0, 1, 60, 0.8), Event(1, 1, 62, 0.7)])
+        b = Events([Event(0, 1, 60, 0.8), Event(1, 1, 62, 0.7)])
+        self.assertEqual(a, b)
+
+    def test_equality_different_contents(self):
+        a = Events([Event(0, 1, 60, 0.8)])
+        b = Events([Event(0, 1, 61, 0.8)])
+        self.assertNotEqual(a, b)
+
+    def test_equality_different_lengths(self):
+        a = Events([Event(0, 1, 60, 0.8)])
+        b = Events([Event(0, 1, 60, 0.8), Event(1, 1, 62, 0.7)])
+        self.assertNotEqual(a, b)
+
+    def test_equality_with_non_events(self):
+        es = Events([Event(0, 1, 60, 0.8)])
+        self.assertNotEqual(es, [Event(0, 1, 60, 0.8)])
+        self.assertNotEqual(es, "Events")
+
+    def test_repr_contains_class_name(self):
+        es = Events([Event(0, 1, 60, 0.8)])
+        self.assertIn("Events", repr(es))
+        self.assertIn("Event", repr(es))
+
+    # ---------- Interaction with tuple() / record() ----------
+
+    def test_tuple_conversion(self):
+        items = [Event(i, 1, 60 + i, 0.5) for i in range(3)]
+        es = Events(items)
+        t = tuple(es)
+        self.assertIsInstance(t, tuple)
+        self.assertEqual(t, tuple(items))
 
 
 if __name__ == "__main__":
