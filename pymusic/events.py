@@ -1,3 +1,8 @@
+# Author:  Martin McBride
+# Created: 2026-05-14
+# Copyright (C) 2026, Martin McBride
+# License: MIT
+
 from dataclasses import dataclass, field
 from typing import Tuple, Iterator, List, Union, overload
 

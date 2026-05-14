@@ -1,3 +1,8 @@
+# Author:  Martin McBride
+# Created: 2026-05-14
+# Copyright (C) 2026, Martin McBride
+# License: MIT
+
 import unittest
 from dataclasses import is_dataclass
 
