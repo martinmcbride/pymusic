@@ -7,27 +7,10 @@ from dataclasses import dataclass, field
 from typing import Tuple, Iterator, List, Union, overload
 
 
-@dataclass
 class Event:
-    start: float
-    duration: float
-    pitch: float
-    volume: float
-    extras: Tuple[float, ...] = field(default_factory=tuple)
 
-    def __init__(
-        self,
-        start: float,
-        duration: float,
-        pitch: float,
-        volume: float,
-        *extras: float,
-    ):
-        self.start = start
-        self.duration = duration
-        self.pitch = pitch
-        self.volume = volume
-        self.extras = extras
+    def __init__(self, start: float, duration: float, pitch: float, volume: float, *extras: float):
+        self.parameters = (start, duration, pitch, volume, *extras)
 
 
 
@@ -48,6 +31,11 @@ class Events:
         """Append a new Event to the collection."""
         if not isinstance(event, Event):
             raise TypeError(f"Expected Event, got {type(event).__name__}")
+        self._events.append(event)
+
+    def addp(self, *params) -> None:
+        """Append a new Event to the collection."""
+        event = Event(*params)
         self._events.append(event)
 
     # ---------- Iteration ----------

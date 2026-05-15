@@ -15,9 +15,6 @@ Usage (as a module):
     buf.write()
 """
 
-from __future__ import annotations
-
-import argparse
 import wave
 from pathlib import Path
 from typing import Union

@@ -12,7 +12,7 @@ nchnls = 2
 
 giSine ftgen 1, 0, 16384, 10, 1
 
-instr Piano
+instr 1
 
     ; p4 = MIDI note
     ; p5 = amplitude
@@ -46,24 +46,7 @@ endin
 
 t 0 120
 
-; Twinkle-ish simple melody
-;     start dur midi amp
-
-i "Piano" 0.0  1.0 60 0.4
-i "Piano" 1.0  1.0 60 0.4
-i "Piano" 2.0  1.0 67 0.4
-i "Piano" 3.0  1.0 67 0.4
-i "Piano" 4.0  1.0 69 0.4
-i "Piano" 5.0  1.0 69 0.4
-i "Piano" 6.0  2.0 67 0.5
-
-i "Piano" 8.0  1.0 65 0.4
-i "Piano" 9.0  1.0 65 0.4
-i "Piano" 10.0 1.0 64 0.4
-i "Piano" 11.0 1.0 64 0.4
-i "Piano" 12.0 1.0 62 0.4
-i "Piano" 13.0 1.0 62 0.4
-i "Piano" 14.0 2.0 60 0.5
+{score}
 
 e
 
