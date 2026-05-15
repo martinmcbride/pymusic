@@ -4,10 +4,12 @@
 # License: MIT
 
 import subprocess
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
 from pymusic.events import Events
+from pymusic.tempfileutils import create_tempfile
 
 
 @dataclass
@@ -26,19 +28,34 @@ class CSoundSequencer:
 
 
     def run(self):
-        # Path to .csd file
-        csd_file = Path(self.instrument)
+
+        # Create a temporary csound file including the parameters
+        instr_csd_file = Path(self.instrument)
+        try:
+            with open(instr_csd_file, 'r', encoding='utf-8') as f:
+                csd_str = f.read()
+        except:
+            print(f"Error reading {instr_csd_file}")
+            exit()
+
+        try:
+            temp_csd_file = create_tempfile(suffix=".csd")
+            temp_csd_file.write(csd_str.format(score=self.eventsToText(self.events)))
+            temp_csd_file.close()
+        except:
+            print(f"Error creating temp file")
+            exit()
 
         # Output WAV file
         output_file = "output.wav"
 
-        print("{{{" + self.eventsToText(self.events) + "}}}")
+        print(temp_csd_file.name)
 
         # Build the Csound command
         cmd = [
             "csound",
             "-o", output_file,
-            str(csd_file)
+            str(temp_csd_file.name)
         ]
 
         try:
