@@ -44,7 +44,7 @@ class AudioBuffer:
         if length <= 0:
             raise ValueError("length must be positive")
 
-        self.sample_rate = sample_rate
+        self._sample_rate = sample_rate
         self.n_channels = 1 # mono
         self.sampwidth = 2 # 2 bytes, 16 bit
 
@@ -71,7 +71,7 @@ class AudioBuffer:
 
     @property
     def sample_rate(self) -> float:
-        return self.sample_rate
+        return self._sample_rate
 
     # ---------- I/O ----------
 

@@ -17,7 +17,9 @@ from pymusic.tempfileutils import create_tempfile
 class CSoundSequencer:
     instrument: str
     events: Events
+    output_file: str
     sample_rate: int = 44100
+    channels: int = 1
 
     def eventsToText(self, events: Events):
         strings = []
@@ -32,7 +34,7 @@ class CSoundSequencer:
     def run(self):
 
         # Create a temporary csound file including the parameters
-        instr_csd_file = Path(self.instrument)
+        instr_csd_file = str(Path(self.instrument))
         try:
             with open(instr_csd_file, 'r', encoding='utf-8') as f:
                 csd_str = f.read()
@@ -48,15 +50,10 @@ class CSoundSequencer:
             print(f"Error creating temp file")
             exit()
 
-        # Output WAV file
-        output_file = "output.wav"
-
-        print(temp_csd_file.name)
-
         # Build the Csound command
         cmd = [
             "csound",
-            "-o", output_file,
+            "-o", self.output_file,
             str(temp_csd_file.name)
         ]
 
@@ -78,5 +75,3 @@ class CSoundSequencer:
         except Exception as e:
             print("Error running CSound Sequencer...")
             print("Return code:", e.returncode)
-
-        read_wav("output.wav")
