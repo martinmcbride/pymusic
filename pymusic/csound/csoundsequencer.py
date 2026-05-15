@@ -72,3 +72,5 @@ class CSoundSequencer:
             print("Return code:", e.returncode)
             print("Error output:")
             print(e.stderr)
+            exit(0)
+
