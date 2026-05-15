@@ -5,9 +5,9 @@
 
 <CsInstruments>
 
-sr     = 48000
+sr     = {sample_rate}
 ksmps  = 32
-nchnls = 2
+nchnls = {channels}
 0dbfs  = 1
 
 giSine ftgen 1, 0, 16384, 10, 1

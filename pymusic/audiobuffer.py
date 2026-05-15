@@ -28,8 +28,6 @@ class AudioBuffer:
 
     Parameters
     ----------
-    filename : str or Path
-        Destination WAV file path.
     length : float or int
         Interpreted as duration in seconds (samples = length * sample_rate)
     sample_rate : int, optional
@@ -47,6 +45,8 @@ class AudioBuffer:
             raise ValueError("length must be positive")
 
         self.sample_rate = sample_rate
+        self.n_channels = 1 # mono
+        self.sampwidth = 2 # 2 bytes, 16 bit
 
         num_samples = int(round(length * sample_rate)) + 1
 
@@ -69,6 +69,10 @@ class AudioBuffer:
     def duration(self) -> float:
         return self.num_samples / self.sample_rate
 
+    @property
+    def sample_rate(self) -> float:
+        return self.sample_rate
+
     # ---------- I/O ----------
 
     def write(self, filename: Union[str, Path]) -> None:
@@ -83,8 +87,8 @@ class AudioBuffer:
         fn = str(Path(filename).with_suffix(".wav"))
 
         with wave.open(fn, "wb") as wf:
-            wf.setnchannels(1)           # mono
-            wf.setsampwidth(2)           # 16-bit
+            wf.setnchannels(self.n_channels)
+            wf.setsampwidth(self.sampwidth)
             wf.setframerate(self.sample_rate)
             wf.writeframes(int_samples.tobytes())
 
@@ -93,3 +97,25 @@ class AudioBuffer:
             f"num_samples={self.num_samples}, "
             f"sample_rate={self.sample_rate})"
         )
+
+def read_wav(filename: Union[str, Path]) -> AudioBuffer:
+    fn = str(Path(filename).with_suffix(".wav"))
+    with wave.open(fn, "rb") as wf:
+        sample_rate = wf.getframerate()
+        n_channels = wf.getnchannels()
+        sampwidth = wf.getsampwidth()
+        n_frames = wf.getnframes()
+
+        if sampwidth != 2:
+            raise ValueError("Reading {fn} - sample width must be 2")
+
+        if n_channels != 1:
+            raise ValueError("Reading {fn} - number of channels must be 1")
+
+        # Read raw bytes
+        dtype_map = {1: np.uint8, 2: np.int16, 4: np.int32}
+        audioBuffer = AudioBuffer(n_frames, sample_rate)
+        audioBuffer.sample_buffer = np.frombuffer(wf.readframes(n_frames), dtype=dtype_map[sampwidth])
+
+        return audioBuffer
+

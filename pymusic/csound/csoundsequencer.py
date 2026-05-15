@@ -8,6 +8,7 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
+from pymusic.audiobuffer import read_wav
 from pymusic.events import Events
 from pymusic.tempfileutils import create_tempfile
 
@@ -16,6 +17,7 @@ from pymusic.tempfileutils import create_tempfile
 class CSoundSequencer:
     instrument: str
     events: Events
+    sample_rate: int = 44100
 
     def eventsToText(self, events: Events):
         strings = []
@@ -40,7 +42,7 @@ class CSoundSequencer:
 
         try:
             temp_csd_file = create_tempfile(suffix=".csd")
-            temp_csd_file.write(csd_str.format(score=self.eventsToText(self.events)))
+            temp_csd_file.write(csd_str.format(score=self.eventsToText(self.events), sample_rate=self.sample_rate, channels=1))
             temp_csd_file.close()
         except:
             print(f"Error creating temp file")
@@ -73,4 +75,8 @@ class CSoundSequencer:
             print("Error output:")
             print(e.stderr)
             exit(0)
+        except Exception as e:
+            print("Error running CSound Sequencer...")
+            print("Return code:", e.returncode)
 
+        read_wav("output.wav")
