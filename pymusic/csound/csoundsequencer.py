@@ -24,7 +24,7 @@ class CSoundSequencer:
     def eventsToText(self, events: Events):
         strings = []
         for e in self.events:
-            s = "i 1 " + " ".join([str(p) for p in e.parameters])
+            s = "i " + " ".join([str(p) for p in e.parameters])
             strings.append(s)
 
         return "\n".join(strings)
