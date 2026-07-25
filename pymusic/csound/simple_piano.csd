@@ -44,7 +44,7 @@ endin
 
 <CsScore>
 
-t 0 120
+t 0 {bpm}
 
 {score}
 

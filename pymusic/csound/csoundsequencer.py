@@ -18,6 +18,7 @@ class CSoundSequencer:
     instrument: str
     events: Events
     output_file: str
+    bpm: float = 120
     sample_rate: int = 44100
     channels: int = 1
 
@@ -44,7 +45,7 @@ class CSoundSequencer:
 
         try:
             temp_csd_file = create_tempfile(suffix=".csd")
-            temp_csd_file.write(csd_str.format(score=self.eventsToText(self.events), sample_rate=self.sample_rate, channels=1))
+            temp_csd_file.write(csd_str.format(score=self.eventsToText(self.events), sample_rate=self.sample_rate, channels=1, bpm=self.bpm))
             temp_csd_file.close()
         except:
             print(f"Error creating temp file")
